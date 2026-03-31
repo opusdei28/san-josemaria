@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vida de san Josemaría</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #46178f;
+            color: white;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        .kahoot-btn {
+            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+        }
+
+        .kahoot-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .option-0 { background-color: #e21b3c; }
+        .option-1 { background-color: #1368ce; }
+        .option-2 { background-color: #d89e00; }
+        .option-3 { background-color: #26890c; }
+
+        .progress-bar {
+            transition: width 0.1s linear;
+        }
+
+        .shape { 
+            font-size: 1.6rem; 
+            min-width: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .fa-caret-up {
+            transform: scale(1.5);
+            display: inline-block;
+            line-height: 1;
+        }
+
+        .modal-enter {
+            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .bg-animate {
+            background: linear-gradient(45deg, #46178f, #5a1ea3);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid #46178f;
+            margin: 0 auto 1.5rem auto;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .music-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #46178f;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .music-btn:hover {
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-animate">
+
+    <audio id="audio-correct" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"></audio>
+    <audio id="audio-wrong" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>
+    <audio id="audio-click" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+    <audio id="audio-bg" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" loop></audio>
+
+    <!-- Pantalla de Inicio -->
+    <div id="start-screen" class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+        <div class="bg-white p-8 rounded-3xl text-center shadow-2xl max-w-md w-full text-slate-800">
+            <img src="https://www.es.catholic.net/catholic_db/imagenes_db/escritores_actuales/SanJosemaria.jpg" 
+                 alt="San Josemaría Escrivá" 
+                 class="profile-img">
+            
+            <h1 class="text-3xl font-black mb-2 text-[#46178f]">Vida de san Josemaría</h1>
+            <p class="text-lg mb-6 font-medium text-slate-600">"El santo de lo ordinario"</p>
+            
+            <button onclick="startGame()" class="w-full bg-[#26890c] hover:bg-[#1f6d0a] text-white font-bold py-4 rounded-xl text-xl transition-all shadow-lg">
+                ¡EMPEZAR!
+            </button>
+            
+            <div class="mt-8 pt-6 border-t border-slate-100">
+                <p class="text-[10px] text-center text-slate-400 leading-relaxed uppercase tracking-wider font-bold">
+                    Juego diseñado para celebrar el aniversario de su nacimiento (9 de enero)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de Juego -->
+    <div id="game-screen" class="hidden flex-grow flex flex-col">
+        <div class="bg-white text-slate-800 p-4 flex justify-between items-center shadow-md">
+            <div class="font-bold text-lg md:text-xl text-[#46178f]">Q <span id="current-q-num">1</span>/15</div>
+            
+            <div class="flex-grow max-w-xs mx-4">
+                <div class="bg-slate-200 w-full h-4 rounded-full overflow-hidden">
+                    <div id="timer-bar" class="progress-bar h-full bg-[#1368ce]" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="font-bold text-lg md:text-xl text-[#46178f] hidden sm:block">Puntos: <span id="score">0</span></div>
+                <div class="font-bold text-lg md:text-xl text-[#46178f] sm:hidden"><span id="score-mobile">0</span></div>
+                <div class="music-btn" onclick="toggleMusic()">
+                    <i id="game-music-icon" class="fas fa-volume-up"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-grow flex flex-col items-center justify-center p-6 text-center">
+            <h2 id="question-text" class="text-2xl md:text-4xl font-black mb-8 drop-shadow-lg"></h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-5xl">
+                <button onclick="checkAnswer(0)" class="kahoot-btn option-0 p-6 rounded-lg text-left flex items-center min-h-[90px] md:min-h-[110px] text-lg md:text-xl font-bold">
+                    <span class="shape mr-4"><i class="fas fa-caret-up text-white"></i></span>
+                    <span id="opt-0"></span>
+                </button>
+                <button onclick="checkAnswer(1)" class="kahoot-btn option-1 p-6 rounded-lg text-left flex items-center min-h-[90px] md:min-h-[110px] text-lg md:text-xl font-bold">
+                    <span class="shape mr-4"><i class="fas fa-diamond text-white"></i></span>
+                    <span id="opt-1"></span>
+                </button>
+                <button onclick="checkAnswer(2)" class="kahoot-btn option-2 p-6 rounded-lg text-left flex items-center min-h-[90px] md:min-h-[110px] text-lg md:text-xl font-bold">
+                    <span class="shape mr-4"><i class="fas fa-circle text-white"></i></span>
+                    <span id="opt-2"></span>
+                </button>
+                <button onclick="checkAnswer(3)" class="kahoot-btn option-3 p-6 rounded-lg text-left flex items-center min-h-[90px] md:min-h-[110px] text-lg md:text-xl font-bold">
+                    <span class="shape mr-4"><i class="fas fa-square text-white"></i></span>
+                    <span id="opt-3"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Feedback -->
+    <div id="feedback-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center modal-enter">
+            <div id="feedback-icon" class="text-6xl mb-4"></div>
+            <h2 id="feedback-title" class="text-3xl font-black mb-2 text-slate-800"></h2>
+            <p id="feedback-points" class="text-xl font-bold text-slate-600 mb-6"></p>
+            <button onclick="nextQuestion()" class="w-full bg-[#1368ce] text-white font-bold py-3 rounded-xl shadow-lg">Siguiente</button>
+        </div>
+    </div>
+
+    <!-- Pantalla Final -->
+    <div id="end-screen" class="hidden flex-grow flex flex-col items-center justify-center p-6 text-center">
+        <h1 class="text-5xl font-black mb-8">¡Excelente!</h1>
+        <div class="bg-white p-8 rounded-3xl shadow-2xl text-slate-800 max-w-md w-full">
+            <p class="text-2xl mb-2">Has obtenido:</p>
+            <div class="text-6xl font-black text-[#46178f] mb-6" id="final-score">0</div>
+            <p id="rank-message" class="text-lg font-medium mb-6 italic"></p>
+            <button onclick="location.reload()" class="w-full bg-[#e21b3c] text-white font-bold py-4 rounded-xl text-xl shadow-lg">Volver a Jugar</button>
+        </div>
+    </div>
+
+    <script>
+        const cronoQuestions = [
+            { q: "¿En qué año nació San Josemaría?", options: ["1902", "1928", "1898", "1910"], correct: 0 },
+            { q: "¿En qué ciudad nació?", options: ["Barbastro", "Madrid", "Zaragoza", "Logroño"], correct: 0 },
+            { q: "¿Cómo se llamaban sus padres?", options: ["José y Dolores", "Juan y María", "Francisco y Carmen", "Santiago y Josefa"], correct: 0 },
+            { q: "¿A dónde le llevó su madre para agradecer su curación de niño?", options: ["Torreciudad", "El Pilar", "Fátima", "Lourdes"], correct: 0 },
+            { q: "¿Cómo se llama su hermano pequeño?", options: ["Santiago", "Juan", "Luis", "Francisco"], correct: 0 },
+            { q: "¿Qué vio en Logroño que le hizo pensar que Dios quería algo de él?", options: ["Las pisadas de un carmelita en la nieve", "Una luz en la iglesia", "Un mendigo pidiendo", "Una visión de ángeles"], correct: 0 },
+            { q: "¿En qué lugar celebró su primera misa?", options: ["En el Pilar de Zaragoza", "En Barbastro", "En Madrid", "En Roma"], correct: 0 },
+            { q: "¿En qué fecha recibió la iluminación de fundar la Obra?", options: ["2 de octubre", "14 de febrero", "26 de junio", "9 de enero"], correct: 0 },
+            { q: "¿A quién daba catequesis San Josemaría en sus primeros años en Madrid?", options: ["A niños pobres", "A universitarios", "A sacerdotes", "A militares"], correct: 0 },
+            { q: "¿En qué fecha falleció en Roma?", options: ["26 de junio de 1975", "2 de octubre de 1928", "9 de enero de 1902", "14 de febrero de 1930"], correct: 0 },
+            { q: "¿Dónde descansan actualmente sus restos?", options: ["Santa María de la Paz (Roma)", "Catedral de la Almudena", "Basílica de San Pedro", "Catedral de Zaragoza"], correct: 0 },
+            { q: "¿Qué Papa le declaró santo?", options: ["Juan Pablo II", "Juan XXIII", "Pablo VI", "Benedicto XVI"], correct: 0 },
+            { q: "¿En qué año fue canonizado?", options: ["2002", "1975", "1992", "2010"], correct: 0 },
+            { q: "¿Cuál es el núcleo del carisma del Opus Dei?", options: ["Santidad en medio del mundo", "Vivir en un convento", "Hacer solo oración oral", "Irse de misiones lejos"], correct: 0 },
+            { q: "¿Qué significa ser buen cristiano según su mensaje?", options: ["Hacer las cosas por amor a Dios", "Ir solo a misa", "Ser muy serio", "Saber mucha teología"], correct: 0 }
+        ];
+
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = 20;
+        let timerInterval;
+        let canAnswer = true;
+        let musicPlaying = false;
+
+        function shuffleOptions(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function prepareQuestions() {
+            const newQuestions = JSON.parse(JSON.stringify(cronoQuestions));
+            newQuestions.forEach(item => {
+                const correctAnswerText = item.options[item.correct];
+                shuffleOptions(item.options);
+                item.correct = item.options.indexOf(correctAnswerText);
+            });
+            return newQuestions;
+        }
+
+        function playShortSound(id) {
+            const sound = document.getElementById(id);
+            if (sound) {
+                sound.currentTime = 0;
+                sound.play().catch(() => {});
+            }
+        }
+
+        function toggleMusic() {
+            const bgAudio = document.getElementById('audio-bg');
+            const icon = document.getElementById('game-music-icon');
+            
+            if (musicPlaying) {
+                bgAudio.pause();
+                if (icon) icon.className = "fas fa-volume-mute";
+            } else {
+                bgAudio.play().catch(() => {});
+                if (icon) icon.className = "fas fa-volume-up";
+            }
+            musicPlaying = !musicPlaying;
+        }
+
+        function startGame() {
+            playShortSound('audio-click');
+            questions = prepareQuestions();
+            const bgAudio = document.getElementById('audio-bg');
+            bgAudio.volume = 0.3;
+            bgAudio.play().then(() => {
+                musicPlaying = true;
+                const gameIcon = document.getElementById('game-music-icon');
+                if (gameIcon) gameIcon.className = "fas fa-volume-up";
+            }).catch(() => {});
+
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            canAnswer = true;
+            timeLeft = 20;
+            updateTimerDisplay();
+            
+            const q = questions[currentQuestionIndex];
+            document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+            document.getElementById('question-text').innerText = q.q;
+            
+            for(let i=0; i<4; i++) {
+                document.getElementById(`opt-${i}`).innerText = q.options[i];
+            }
+
+            timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    checkAnswer(-1);
+                }
+            }, 100);
+        }
+
+        function updateTimerDisplay() {
+            const bar = document.getElementById('timer-bar');
+            bar.style.width = (timeLeft / 20 * 100) + "%";
+        }
+
+        function checkAnswer(index) {
+            if (!canAnswer) return;
+            canAnswer = false;
+            clearInterval(timerInterval);
+
+            const correct = questions[currentQuestionIndex].correct;
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackPoints = document.getElementById('feedback-points');
+            
+            if (index === correct) {
+                playShortSound('audio-correct');
+                const pts = Math.round(timeLeft * 50);
+                score += pts;
+                feedbackIcon.innerHTML = '✅';
+                feedbackTitle.innerText = "¡Correcto!";
+                feedbackTitle.className = "text-3xl font-black mb-2 text-green-600";
+                feedbackPoints.innerText = `+${pts} puntos`;
+            } else {
+                playShortSound('audio-wrong');
+                feedbackIcon.innerHTML = '❌';
+                feedbackTitle.innerText = index === -1 ? "¡Tiempo!" : "¡Incorrecto!";
+                feedbackTitle.className = "text-3xl font-black mb-2 text-red-600";
+                feedbackPoints.innerText = "Sigue intentándolo.";
+            }
+
+            document.getElementById('score').innerText = score;
+            document.getElementById('score-mobile').innerText = score;
+            document.getElementById('feedback-modal').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            playShortSound('audio-click');
+            document.getElementById('feedback-modal').classList.add('hidden');
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showEndScreen();
+            }
+        }
+
+        function showEndScreen() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+            
+            let msg = "";
+            const maxPoints = questions.length * 1000;
+            if (score > maxPoints * 0.8) msg = "¡Excelente! Has recorrido su vida perfectamente.";
+            else if (score > maxPoints * 0.5) msg = "¡Muy bien! Conoces bien la historia del Padre.";
+            else msg = "¡Sigue aprendiendo! Fue una vida apasionante.";
+            
+            document.getElementById('rank-message').innerText = msg;
+        }
+    </script>
+</body>
+</html>
